@@ -1,16 +1,18 @@
 import gql from 'graphql-tag'
 
+// User information
 export const GET_INFO_QUERY = gql`
   query GET_INFO {
     users {
       school
-      grad_year
       major
       concentration
       nickname
       auth0_id
       majorChecks
       coreChecks
+      enroll
+      planned_grad
     }
   }
 `
@@ -36,7 +38,8 @@ export const UPDATE_USER = gql`
     $school: String!
     $major: String!
     $conc: String!
-    $gradYear: Int!
+    $enroll: Int!
+    $plannedGrad: String!
   ) {
     update_users(
       where: { auth0_id: { _eq: $id } }
@@ -45,7 +48,8 @@ export const UPDATE_USER = gql`
         school: $school
         major: $major
         concentration: $conc
-        grad_year: $gradYear
+        enroll: $enroll
+        planned_grad: $plannedGrad
       }
     ) {
       affected_rows
@@ -54,11 +58,13 @@ export const UPDATE_USER = gql`
         school
         major
         concentration
-        grad_year
+        enroll
+        planned_grad
       }
     }
   }
 `
+
 export const UPDATE_MAJOR_CHECKS = gql`
   mutation UPDATE_MAJOR_CHECKS($id: String!, $majorChecks: String!) {
     update_users(
@@ -87,6 +93,18 @@ export const UPDATE_CORE_CHECKS = gql`
   }
 `
 
+export const INCREMENT_COURSE_EDITS_MUTATION = gql`
+  mutation INCREMENT_COURSE_EDITS {
+    update_users(where: {}, _inc: { course_edits: 1 }) {
+      affected_rows
+      returning {
+        course_edits
+      }
+    }
+  }
+`
+
+// Course information
 export const UPDATE_COURSE = gql`
   mutation UPDATE_COURSE(
     $old_title: String!
@@ -157,6 +175,24 @@ export const ADD_COURSE = gql`
     }
   }
 `
+
+export const ADD_MULTIPLE_COURSES = gql`
+  mutation ADD_MULTIPLE_COURSES($objects: [courses_insert_input!]!) {
+    insert_courses(objects: $objects) {
+      affected_rows
+      returning {
+        term
+        title
+        code
+        credits
+        type
+        campus
+        writ_inten
+      }
+    }
+  }
+`
+
 export const REMOVE_COURSE = gql`
   mutation REMOVE_COURSE($term: String!, $title: String!) {
     delete_courses(where: { term: { _eq: $term }, title: { _eq: $title } }) {
@@ -165,13 +201,10 @@ export const REMOVE_COURSE = gql`
   }
 `
 
-export const INCREMENT_COURSE_EDITS_MUTATION = gql`
-  mutation INCREMENT_COURSE_EDITS {
-    update_users(where: {}, _inc: { course_edits: 1 }) {
+export const REMOVE_ALL_COURSES = gql`
+  mutation REMOVE_ALL_COURSES {
+    delete_courses(where: {}) {
       affected_rows
-      returning {
-        course_edits
-      }
     }
   }
 `

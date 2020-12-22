@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import AppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
@@ -9,6 +9,8 @@ import LoginButton from './LoginButton'
 import YearStepper from './Stepper'
 import Logo from '../images/logo.png'
 import HelpModal from './HelpModal'
+import ImportExportModal from './ImportExportModal'
+import { CoursesContext } from '../context/CoursesContext'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -58,6 +60,8 @@ const useStyles = makeStyles((theme) => ({
 function TopBar(): JSX.Element {
   const classes = useStyles()
 
+  const { loading, error } = useContext(CoursesContext)
+
   return (
     <div className={classes.root}>
       <AppBar position="static" className={classes.appBar}>
@@ -79,6 +83,7 @@ function TopBar(): JSX.Element {
             <YearStepper />
           </Grid>
           <Grid className={classes.sideButtons}>
+            {!loading && !error && <ImportExportModal />}
             <HelpModal />
             <GitButton />
             <LoginButton />

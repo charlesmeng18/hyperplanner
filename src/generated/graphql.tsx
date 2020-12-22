@@ -1386,13 +1386,14 @@ export type Get_InfoQuery = { __typename?: 'query_root' } & {
     { __typename?: 'users' } & Pick<
       Users,
       | 'school'
-      | 'grad_year'
       | 'major'
       | 'concentration'
       | 'nickname'
       | 'auth0_id'
       | 'majorChecks'
       | 'coreChecks'
+      | 'enroll'
+      | 'planned_grad'
     >
   >
 }
@@ -1414,7 +1415,8 @@ export type Update_UserMutationVariables = Exact<{
   school: Scalars['String']
   major: Scalars['String']
   conc: Scalars['String']
-  gradYear: Scalars['Int']
+  enroll: Scalars['Int']
+  plannedGrad: Scalars['String']
 }>
 
 export type Update_UserMutation = { __typename?: 'mutation_root' } & {
@@ -1426,7 +1428,12 @@ export type Update_UserMutation = { __typename?: 'mutation_root' } & {
         returning: Array<
           { __typename?: 'users' } & Pick<
             Users,
-            'nickname' | 'school' | 'major' | 'concentration' | 'grad_year'
+            | 'nickname'
+            | 'school'
+            | 'major'
+            | 'concentration'
+            | 'enroll'
+            | 'planned_grad'
           >
         >
       }
@@ -1461,6 +1468,23 @@ export type Update_Core_ChecksMutation = { __typename?: 'mutation_root' } & {
       'affected_rows'
     > & {
         returning: Array<{ __typename?: 'users' } & Pick<Users, 'coreChecks'>>
+      }
+  >
+}
+
+export type Increment_Course_EditsMutationVariables = Exact<{
+  [key: string]: never
+}>
+
+export type Increment_Course_EditsMutation = {
+  __typename?: 'mutation_root'
+} & {
+  update_users?: Maybe<
+    { __typename?: 'users_mutation_response' } & Pick<
+      Users_Mutation_Response,
+      'affected_rows'
+    > & {
+        returning: Array<{ __typename?: 'users' } & Pick<Users, 'course_edits'>>
       }
   >
 }
@@ -1530,6 +1554,32 @@ export type Add_CourseMutation = { __typename?: 'mutation_root' } & {
   >
 }
 
+export type Add_Multiple_CoursesMutationVariables = Exact<{
+  objects: Array<Courses_Insert_Input>
+}>
+
+export type Add_Multiple_CoursesMutation = { __typename?: 'mutation_root' } & {
+  insert_courses?: Maybe<
+    { __typename?: 'courses_mutation_response' } & Pick<
+      Courses_Mutation_Response,
+      'affected_rows'
+    > & {
+        returning: Array<
+          { __typename?: 'courses' } & Pick<
+            Courses,
+            | 'term'
+            | 'title'
+            | 'code'
+            | 'credits'
+            | 'type'
+            | 'campus'
+            | 'writ_inten'
+          >
+        >
+      }
+  >
+}
+
 export type Remove_CourseMutationVariables = Exact<{
   term: Scalars['String']
   title: Scalars['String']
@@ -1544,20 +1594,16 @@ export type Remove_CourseMutation = { __typename?: 'mutation_root' } & {
   >
 }
 
-export type Increment_Course_EditsMutationVariables = Exact<{
+export type Remove_All_CoursesMutationVariables = Exact<{
   [key: string]: never
 }>
 
-export type Increment_Course_EditsMutation = {
-  __typename?: 'mutation_root'
-} & {
-  update_users?: Maybe<
-    { __typename?: 'users_mutation_response' } & Pick<
-      Users_Mutation_Response,
+export type Remove_All_CoursesMutation = { __typename?: 'mutation_root' } & {
+  delete_courses?: Maybe<
+    { __typename?: 'courses_mutation_response' } & Pick<
+      Courses_Mutation_Response,
       'affected_rows'
-    > & {
-        returning: Array<{ __typename?: 'users' } & Pick<Users, 'course_edits'>>
-      }
+    >
   >
 }
 
@@ -1565,13 +1611,14 @@ export const Get_InfoDocument = gql`
   query GET_INFO {
     users {
       school
-      grad_year
       major
       concentration
       nickname
       auth0_id
       majorChecks
       coreChecks
+      enroll
+      planned_grad
     }
   }
 `
@@ -1684,7 +1731,8 @@ export const Update_UserDocument = gql`
     $school: String!
     $major: String!
     $conc: String!
-    $gradYear: Int!
+    $enroll: Int!
+    $plannedGrad: String!
   ) {
     update_users(
       where: { auth0_id: { _eq: $id } }
@@ -1693,7 +1741,8 @@ export const Update_UserDocument = gql`
         school: $school
         major: $major
         concentration: $conc
-        grad_year: $gradYear
+        enroll: $enroll
+        planned_grad: $plannedGrad
       }
     ) {
       affected_rows
@@ -1702,7 +1751,8 @@ export const Update_UserDocument = gql`
         school
         major
         concentration
-        grad_year
+        enroll
+        planned_grad
       }
     }
   }
@@ -1730,7 +1780,8 @@ export type Update_UserMutationFn = Apollo.MutationFunction<
  *      school: // value for 'school'
  *      major: // value for 'major'
  *      conc: // value for 'conc'
- *      gradYear: // value for 'gradYear'
+ *      enroll: // value for 'enroll'
+ *      plannedGrad: // value for 'plannedGrad'
  *   },
  * });
  */
@@ -1862,6 +1913,56 @@ export type Update_Core_ChecksMutationResult = Apollo.MutationResult<Update_Core
 export type Update_Core_ChecksMutationOptions = Apollo.BaseMutationOptions<
   Update_Core_ChecksMutation,
   Update_Core_ChecksMutationVariables
+>
+export const Increment_Course_EditsDocument = gql`
+  mutation INCREMENT_COURSE_EDITS {
+    update_users(where: {}, _inc: { course_edits: 1 }) {
+      affected_rows
+      returning {
+        course_edits
+      }
+    }
+  }
+`
+export type Increment_Course_EditsMutationFn = Apollo.MutationFunction<
+  Increment_Course_EditsMutation,
+  Increment_Course_EditsMutationVariables
+>
+
+/**
+ * __useIncrement_Course_EditsMutation__
+ *
+ * To run a mutation, you first call `useIncrement_Course_EditsMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useIncrement_Course_EditsMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [incrementCourseEditsMutation, { data, loading, error }] = useIncrement_Course_EditsMutation({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useIncrement_Course_EditsMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    Increment_Course_EditsMutation,
+    Increment_Course_EditsMutationVariables
+  >,
+) {
+  return Apollo.useMutation<
+    Increment_Course_EditsMutation,
+    Increment_Course_EditsMutationVariables
+  >(Increment_Course_EditsDocument, baseOptions)
+}
+export type Increment_Course_EditsMutationHookResult = ReturnType<
+  typeof useIncrement_Course_EditsMutation
+>
+export type Increment_Course_EditsMutationResult = Apollo.MutationResult<Increment_Course_EditsMutation>
+export type Increment_Course_EditsMutationOptions = Apollo.BaseMutationOptions<
+  Increment_Course_EditsMutation,
+  Increment_Course_EditsMutationVariables
 >
 export const Update_CourseDocument = gql`
   mutation UPDATE_COURSE(
@@ -2027,6 +2128,63 @@ export type Add_CourseMutationOptions = Apollo.BaseMutationOptions<
   Add_CourseMutation,
   Add_CourseMutationVariables
 >
+export const Add_Multiple_CoursesDocument = gql`
+  mutation ADD_MULTIPLE_COURSES($objects: [courses_insert_input!]!) {
+    insert_courses(objects: $objects) {
+      affected_rows
+      returning {
+        term
+        title
+        code
+        credits
+        type
+        campus
+        writ_inten
+      }
+    }
+  }
+`
+export type Add_Multiple_CoursesMutationFn = Apollo.MutationFunction<
+  Add_Multiple_CoursesMutation,
+  Add_Multiple_CoursesMutationVariables
+>
+
+/**
+ * __useAdd_Multiple_CoursesMutation__
+ *
+ * To run a mutation, you first call `useAdd_Multiple_CoursesMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAdd_Multiple_CoursesMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addMultipleCoursesMutation, { data, loading, error }] = useAdd_Multiple_CoursesMutation({
+ *   variables: {
+ *      objects: // value for 'objects'
+ *   },
+ * });
+ */
+export function useAdd_Multiple_CoursesMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    Add_Multiple_CoursesMutation,
+    Add_Multiple_CoursesMutationVariables
+  >,
+) {
+  return Apollo.useMutation<
+    Add_Multiple_CoursesMutation,
+    Add_Multiple_CoursesMutationVariables
+  >(Add_Multiple_CoursesDocument, baseOptions)
+}
+export type Add_Multiple_CoursesMutationHookResult = ReturnType<
+  typeof useAdd_Multiple_CoursesMutation
+>
+export type Add_Multiple_CoursesMutationResult = Apollo.MutationResult<Add_Multiple_CoursesMutation>
+export type Add_Multiple_CoursesMutationOptions = Apollo.BaseMutationOptions<
+  Add_Multiple_CoursesMutation,
+  Add_Multiple_CoursesMutationVariables
+>
 export const Remove_CourseDocument = gql`
   mutation REMOVE_COURSE($term: String!, $title: String!) {
     delete_courses(where: { term: { _eq: $term }, title: { _eq: $title } }) {
@@ -2076,53 +2234,50 @@ export type Remove_CourseMutationOptions = Apollo.BaseMutationOptions<
   Remove_CourseMutation,
   Remove_CourseMutationVariables
 >
-export const Increment_Course_EditsDocument = gql`
-  mutation INCREMENT_COURSE_EDITS {
-    update_users(where: {}, _inc: { course_edits: 1 }) {
+export const Remove_All_CoursesDocument = gql`
+  mutation REMOVE_ALL_COURSES {
+    delete_courses(where: {}) {
       affected_rows
-      returning {
-        course_edits
-      }
     }
   }
 `
-export type Increment_Course_EditsMutationFn = Apollo.MutationFunction<
-  Increment_Course_EditsMutation,
-  Increment_Course_EditsMutationVariables
+export type Remove_All_CoursesMutationFn = Apollo.MutationFunction<
+  Remove_All_CoursesMutation,
+  Remove_All_CoursesMutationVariables
 >
 
 /**
- * __useIncrement_Course_EditsMutation__
+ * __useRemove_All_CoursesMutation__
  *
- * To run a mutation, you first call `useIncrement_Course_EditsMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useIncrement_Course_EditsMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useRemove_All_CoursesMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRemove_All_CoursesMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [incrementCourseEditsMutation, { data, loading, error }] = useIncrement_Course_EditsMutation({
+ * const [removeAllCoursesMutation, { data, loading, error }] = useRemove_All_CoursesMutation({
  *   variables: {
  *   },
  * });
  */
-export function useIncrement_Course_EditsMutation(
+export function useRemove_All_CoursesMutation(
   baseOptions?: Apollo.MutationHookOptions<
-    Increment_Course_EditsMutation,
-    Increment_Course_EditsMutationVariables
+    Remove_All_CoursesMutation,
+    Remove_All_CoursesMutationVariables
   >,
 ) {
   return Apollo.useMutation<
-    Increment_Course_EditsMutation,
-    Increment_Course_EditsMutationVariables
-  >(Increment_Course_EditsDocument, baseOptions)
+    Remove_All_CoursesMutation,
+    Remove_All_CoursesMutationVariables
+  >(Remove_All_CoursesDocument, baseOptions)
 }
-export type Increment_Course_EditsMutationHookResult = ReturnType<
-  typeof useIncrement_Course_EditsMutation
+export type Remove_All_CoursesMutationHookResult = ReturnType<
+  typeof useRemove_All_CoursesMutation
 >
-export type Increment_Course_EditsMutationResult = Apollo.MutationResult<Increment_Course_EditsMutation>
-export type Increment_Course_EditsMutationOptions = Apollo.BaseMutationOptions<
-  Increment_Course_EditsMutation,
-  Increment_Course_EditsMutationVariables
+export type Remove_All_CoursesMutationResult = Apollo.MutationResult<Remove_All_CoursesMutation>
+export type Remove_All_CoursesMutationOptions = Apollo.BaseMutationOptions<
+  Remove_All_CoursesMutation,
+  Remove_All_CoursesMutationVariables
 >
